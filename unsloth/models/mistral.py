@@ -287,6 +287,22 @@ def patch_mistral_nemo_attention(function):
     return function
 pass
 
+def patch_mistral_nemo_attention(function):
+    function = function.replace(
+        "(self.head_dim * self.num_heads) != self.hidden_size",
+        "False",
+    )
+    function = function.replace(
+        "self.head_dim = self.hidden_size // self.num_heads",
+        "self.head_dim = config.head_dim",
+    )
+    function = function.replace(
+        "self.o_proj = nn.Linear(self.hidden_size, self.hidden_size, bias=False)",
+        "self.o_proj = nn.Linear(self.num_heads * self.head_dim, self.hidden_size, bias=False)",
+    )
+    return function
+pass
+
 
 class FastMistralModel(FastLlamaModel):
 
