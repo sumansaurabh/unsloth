@@ -790,18 +790,30 @@ def LlamaDecoderLayer_fastforward(
     padding_mask:         Optional[torch.LongTensor] = None,
     *args, **kwargs,
 ) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
-    """
+    """Forward pass through the Llama decoder layer with fast inference
+    options.
+
+    This method processes the input hidden states through a series of layer
+    normalization, self-attention, and feed-forward operations. It supports
+    caching of key-value states for faster decoding and can return attention
+    weights if specified. The function adapts its behavior based on whether
+    caching is enabled or not, ensuring efficient computation while
+    maintaining the integrity of the model's outputs.
+
     Args:
-        hidden_states (`torch.FloatTensor`): input to the layer of shape `(batch, seq_len, embed_dim)`
-        attention_mask (`torch.FloatTensor`, *optional*): attention mask of size
-            `(batch, 1, tgt_len, src_len)` where padding elements are indicated by very large negative values.
-        output_attentions (`bool`, *optional*):
-            Whether or not to return the attentions tensors of all attention layers. See `attentions` under
-            returned tensors for more detail.
-        use_cache (`bool`, *optional*):
-            If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding
-            (see `past_key_values`).
-        past_key_value (`Tuple(torch.FloatTensor)`, *optional*): cached past key and value projection states
+        hidden_states (torch.FloatTensor): Input to the layer of shape `(batch, seq_len, embed_dim)`.
+        causal_mask (Optional[xformers.attn_bias.BlockDiagonalCausalMask]?): Causal mask to prevent attention to future tokens.
+        attention_mask (Optional[torch.FloatTensor]?): Attention mask of size `(batch, 1, tgt_len, src_len)` where padding
+            elements are indicated by very large negative values.
+        position_ids (Optional[torch.LongTensor]?): Tensor containing position indices for the input tokens.
+        past_key_value (Optional[Tuple[torch.Tensor]]?): Cached past key and value projection states for faster decoding.
+        output_attentions (Optional[bool]?): Whether or not to return the attention tensors of all attention layers.
+        use_cache (Optional[bool]?): If set to `True`, returns past key-value states to speed up decoding.
+        padding_mask (Optional[torch.LongTensor]?): Mask indicating padding positions in the input.
+
+    Returns:
+        Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]: A tuple containing the processed hidden states and optionally the
+            attention weights and past key-value states.
     """
     if use_cache and hasattr(self, "_flag_for_generation"):
         residual = hidden_states
